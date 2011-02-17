@@ -32,5 +32,6 @@ if __name__ == "__main__":
     elif options.list_groups:
         list_groups()
     else:
-        remote(get_systems(args[0], " ".join(args[1:]),
-                                remote_limit=int(options.count)))
+        hosts = get_systems(args[0])
+        command = " ".join(args[1:])
+        remote(hosts, command, remote_limit=int(options.count))
