@@ -9,14 +9,18 @@ class Commander:
         self._thread_available = threading.Semaphore(remote_limit)
         self._output_lock = threading.Lock()
 
-    def remote(self, hosts, cmd):
+    def remote(self, hosts, cmd, jumphost=None):
         threads = []
+        extra = []
+        if jumphost:
+            extra.append('-o "ProxyCommand ssh -A %s nc %%h %%p"' % jumphost)
         for host in hosts:
-            ssh_cmd = """ssh -T %s <<EOF
+            ssh_cmd = """ssh -T %s %s <<EOF
                 %s
-EOF""" % (host, cmd)
+EOF""" % (" ".join(extra), host, cmd)
 
-            t = threading.Thread(target=self._run_command_thread, args=(host, cmd, ssh_cmd))
+            t = threading.Thread(target=self._run_command_thread,
+                                    args=(host, cmd, ssh_cmd))
             t.daemon = True
             threads.append(t)
 
@@ -55,7 +59,6 @@ EOF""" % (host, cmd)
     def run(self, cmd):
         return Popen(cmd, shell=True,
                         stdout=PIPE, stderr=PIPE).communicate()
-
 
     def _log_lines(self, host, out_type, output):
         for l in output.splitlines():
