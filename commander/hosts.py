@@ -23,7 +23,10 @@ def get_systems(host_group):
     return commanderconfig.hostgroups[host_group]
 
 
-def list_groups():
+def list_groups(color=True):
     groups = sorted(commanderconfig.hostgroups.keys())
     for g in groups:
-        print "%s: %s" % (colorize(g, 'green'), ",".join(get_systems(g)))
+        group = g
+        if color:
+            g = colorize(g, 'green') 
+        print "%s: %s" % (g, ",".join(get_systems(group)))
