@@ -19,7 +19,7 @@ if __name__ == "__main__":
               help="list systems in group")
 
     parser.add_option("-c", "--count",
-              default=8,
+              default=25,
               help="number of systems to run cmd on at once")
 
     parser.disable_interspersed_args()
