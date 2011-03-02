@@ -47,7 +47,7 @@ class ThreadPool:
 
 _output_lock = Lock()
 
-def remote(hosts, cmd, jumphost=None, remote_limit=8):
+def remote(hosts, cmd, jumphost=None, remote_limit=25):
     t = ThreadPool(remote_limit)
     extra = []
     if jumphost:
