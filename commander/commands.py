@@ -59,7 +59,7 @@ def remote(hosts, cmd, jumphost=None, remote_limit=25, ssh_key=None):
         else:
             raise ValueError("ssh_key should be a valid file")
     for host in hosts:
-        ssh_cmd = """ssh -T %s %s <<EOF
+        ssh_cmd = """ssh -T %s %s <<'EOF'
             %s
 EOF""" % (" ".join(extra), host, cmd)
         t.add_func(_run_command, host, cmd, ssh_cmd)
