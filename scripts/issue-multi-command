@@ -22,6 +22,9 @@ if __name__ == "__main__":
               default=25,
               help="number of systems to run cmd on at once")
 
+    parser.add_option("-i", "--identity",
+              help="path to ssh private key")
+
     parser.disable_interspersed_args()
     (options, args) = parser.parse_args()
 
@@ -34,4 +37,4 @@ if __name__ == "__main__":
     else:
         hosts = get_systems(args[0])
         command = " ".join(args[1:])
-        remote(hosts, command, remote_limit=int(options.count))
+        remote(hosts, command, remote_limit=int(options.count), ssh_key=options.identity)

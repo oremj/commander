@@ -1,4 +1,5 @@
 import logging
+import os
 from subprocess import Popen, PIPE
 from threading import Lock, Semaphore, Thread
 
@@ -47,11 +48,16 @@ class ThreadPool:
 
 _output_lock = Lock()
 
-def remote(hosts, cmd, jumphost=None, remote_limit=25):
+def remote(hosts, cmd, jumphost=None, remote_limit=25, ssh_key=None):
     t = ThreadPool(remote_limit)
     extra = []
     if jumphost:
         extra.append('-o "ProxyCommand ssh -A %s nc %%h %%p"' % jumphost)
+    if ssh_key:
+        if os.path.isfile(ssh_key):
+            extra.append('-i %s' % ssh_key)
+        else:
+            raise ValueError("ssh_key should be a valid file")
     for host in hosts:
         ssh_cmd = """ssh -T %s %s <<EOF
             %s
