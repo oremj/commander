@@ -48,23 +48,32 @@ class ThreadPool:
 
 _output_lock = Lock()
 
-def remote(hosts, cmd, jumphost=None, remote_limit=25, ssh_key=None):
-    t = ThreadPool(remote_limit)
+def _remote_cmd(host, cmd, jumphost, ssh_key):
     extra = []
+
     if jumphost:
         extra.append('-o "ProxyCommand ssh -A %s nc %%h %%p"' % jumphost)
+
     if ssh_key:
         if os.path.isfile(ssh_key):
             extra.append('-i %s' % ssh_key)
         else:
             raise ValueError("ssh_key should be a valid file")
-    for host in hosts:
-        ssh_cmd = """ssh -T %s %s <<'EOF'
-            %s
+    return """ssh -T %s %s <<'EOF'
+        %s
 EOF""" % (" ".join(extra), host, cmd)
+
+def remote(hosts, cmd, jumphost=None, remote_limit=25, ssh_key=None):
+    t = ThreadPool(remote_limit)
+    for host in hosts:
+        ssh_cmd = _remote_cmd(host, cmd, jumphost, ssh_key)
         t.add_func(_run_command, host, cmd, ssh_cmd)
 
     t.run_all()
+
+def remote_single(host, cmd, jumphost=None, ssh_key=None):
+    return _run_command(host, cmd, _remote_cmd(host, cmd, jumphost, ssh_key))
+    
 
 def _run_command(host, cmd, full_cmd=None):
     if not full_cmd:

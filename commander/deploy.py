@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from functools import wraps
 
 from commander.hosts import get_systems
-from commander.commands import local, remote, ThreadPool
+from commander.commands import local, remote_single, ThreadPool
 
 
 class Context(object):
@@ -29,7 +29,7 @@ class Context(object):
 
     def remote(self, cmd, *args, **kwargs):
         cmd = self._wrap_remote_cmd(cmd)
-        return remote([self.host], cmd, *args, **kwargs)
+        return remote_single(self.host, cmd, *args, **kwargs)
 
     def local(self, cmd, *args, **kwargs):
         cmd = self._wrap_local_cmd(cmd)
