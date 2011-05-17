@@ -49,15 +49,16 @@ class Context(object):
         return self._set_path(path, "local_cwd")
 
 
-def hostgroup(group, remote_limit=25):
+def hostgroups(groups, remote_limit=25):
     def wrapper(f):
         @wraps(f)
         def inner_wrapper(*args, **kwargs):
             t = ThreadPool(remote_limit)
-            for host in get_systems(group):
-                ctx = Context()
-                ctx.set_host(host)
-                t.add_func(f, ctx, *args, **kwargs)
+            for group in groups:
+                for host in get_systems(group):
+                    ctx = Context()
+                    ctx.set_host(host)
+                    t.add_func(f, ctx, *args, **kwargs)
             t.run_all()
 
         return inner_wrapper
@@ -82,6 +83,8 @@ def local_command(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
         f(Context(), *args, **kwargs)
+
+    return wrapper
 
 def main():
     pass
