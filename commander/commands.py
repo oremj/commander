@@ -1,5 +1,6 @@
 import logging
 import os
+import types
 from subprocess import Popen, PIPE
 from threading import Lock, Semaphore, Thread
 
@@ -63,17 +64,25 @@ def _remote_cmd(host, cmd, jumphost, ssh_key):
         %s
 EOF""" % (" ".join(extra), host, cmd)
 
-def remote(hosts, cmd, jumphost=None, remote_limit=25, ssh_key=None):
-    t = ThreadPool(remote_limit)
-    for host in hosts:
-        ssh_cmd = _remote_cmd(host, cmd, jumphost, ssh_key)
-        t.add_func(_run_command, host, cmd, ssh_cmd)
 
-    t.run_all()
+def remote(hosts, cmd, jumphost=None, remote_limit=25, ssh_key=None, run_threaded=True):
+    if isinstance(hosts, types.StringTypes):
+        hosts = [hosts]
 
-def remote_single(host, cmd, jumphost=None, ssh_key=None):
-    return _run_command(host, cmd, _remote_cmd(host, cmd, jumphost, ssh_key))
+    if len(hosts) == 1 or remote_limit == 1:
+        run_threaded = False
     
+    if run_threaded:
+        t = ThreadPool(remote_limit)
+        for host in hosts:
+            ssh_cmd = _remote_cmd(host, cmd, jumphost, ssh_key)
+            t.add_func(_run_command, host, cmd, ssh_cmd)
+        t.run_all()
+    else:
+        for host in hosts:
+            ssh_cmd = _remote_cmd(host, cmd, jumphost, ssh_key)
+            _run_command(host, cmd, ssh_cmd)
+
 
 def _run_command(host, cmd, full_cmd=None):
     if not full_cmd:
@@ -87,12 +96,15 @@ def _run_command(host, cmd, full_cmd=None):
     _log_lines(host, colorize("err", "red"), stderr)
     _output_lock.release()
 
+
 def local(cmd):
     _run_command("localhost", cmd)
+
 
 def run(cmd):
     return Popen(cmd, shell=True,
                     stdout=PIPE, stderr=PIPE).communicate()
+
 
 def _log_lines(host, out_type, output):
     for l in output.splitlines():

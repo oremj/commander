@@ -1,13 +1,19 @@
 import os
 import sys
+import types
 from contextlib import contextmanager
 from functools import wraps
 
 from commander.hosts import get_systems
-from commander.commands import local, remote_single, ThreadPool
+from commander.commands import local, remote, ThreadPool
 
 
 commands = {}
+
+def _listify(l):
+    if isinstance(l, types.StringTypes):
+        l = [l]
+    return l
 
 
 class Context(object):
@@ -27,7 +33,7 @@ class Context(object):
 
     def remote(self, cmd, *args, **kwargs):
         cmd = self._wrap_cmd(cmd, 'cwd')
-        return remote_single(self.env['host'], cmd, *args, **kwargs)
+        return remote(self.env['host'], cmd, *args, **kwargs)
 
     def local(self, cmd, *args, **kwargs):
         cmd = self._wrap_cmd(cmd, 'lcwd')
@@ -48,6 +54,7 @@ class Context(object):
 
 
 def hostgroups(groups, remote_limit=25):
+    groups = _listify(groups)
     def wrapper(f):
         @wraps(f)
         def inner_wrapper(*args, **kwargs):
@@ -65,6 +72,7 @@ def hostgroups(groups, remote_limit=25):
 
 
 def hosts(hosts, remote_limit=25):
+    hosts = _listify(hosts)
     def wrapper(f):
         @wraps(f)
         def inner_wrapper(*args, **kwargs):
