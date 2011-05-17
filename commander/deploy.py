@@ -7,6 +7,9 @@ from commander.hosts import get_systems
 from commander.commands import local, remote_single, ThreadPool
 
 
+commands = {}
+
+
 class Context(object):
 
     def __init__(self):
@@ -55,7 +58,8 @@ def hostgroups(groups, remote_limit=25):
                     ctx.set_host(host)
                     t.add_func(f, ctx, *args, **kwargs)
             t.run_all()
-
+        
+        commands[f.__name__] = inner_wrapper
         return inner_wrapper
     return wrapper
 
@@ -70,19 +74,16 @@ def hosts(hosts, remote_limit=25):
                 ctx.set_host(host)
                 t.add_func(f, ctx, *args, **kwargs)
             t.run_all()
-
+        
+        commands[f.__name__] = inner_wrapper
         return inner_wrapper
     return wrapper
+
 
 def local_command(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
         f(Context(), *args, **kwargs)
 
+    commands[f.__name__] = wrapper
     return wrapper
-
-def main():
-    pass
-
-if __name__ == "__main__":
-    main()

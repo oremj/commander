@@ -1,0 +1,4 @@
+#!/usr/bin/python2.6
+from commander.main import main
+
+main()
