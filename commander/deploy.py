@@ -10,43 +10,38 @@ from commander.commands import local, remote_single, ThreadPool
 class Context(object):
 
     def __init__(self):
-        self.host = None
-        self.remote_cwd = ""
-        self.local_cwd = ""
+        self.env = {'host': None,
+                    'cwd': "",
+                    'lcwd': ""}
 
     def set_host(self, host):
-        self.host = host
+        self.env['host'] = host
 
-    def _wrap_remote_cmd(self, cmd):
-        if self.remote_cwd:
-            cmd = "cd %s && %s" % (self.remote_cwd, cmd)
-        return cmd
-
-    def _wrap_local_cmd(self, cmd):
-        if self.local_cwd:
-            cmd = "cd %s && %s" % (self.local_cwd, cmd)
+    def _wrap_cmd(self, cmd, which):
+        if self.env[which]:
+            cmd = "cd %s && %s" % (self.env[which], cmd)
         return cmd
 
     def remote(self, cmd, *args, **kwargs):
-        cmd = self._wrap_remote_cmd(cmd)
-        return remote_single(self.host, cmd, *args, **kwargs)
+        cmd = self._wrap_cmd(cmd, 'cwd')
+        return remote_single(self.env['host'], cmd, *args, **kwargs)
 
     def local(self, cmd, *args, **kwargs):
-        cmd = self._wrap_local_cmd(cmd)
+        cmd = self._wrap_cmd(cmd, 'lcwd')
         return local(cmd, *args, **kwargs)
 
     @contextmanager
-    def _set_path(self, path, var):
-        prev_path = getattr(self, var)
-        setattr(self, var, os.path.join(prev_path, path))
+    def _set_path(self, path, which):
+        prev_path = self.env[which]
+        self.env[which] = os.path.join(prev_path, path)
         yield
-        setattr(self, var, prev_path)
+        self.env[which] = prev_path
 
     def cd(self, path):
-        return self._set_path(path, "remote_cwd")
+        return self._set_path(path, "cwd")
 
     def lcd(self, path):
-        return self._set_path(path, "local_cwd")
+        return self._set_path(path, "lcwd")
 
 
 def hostgroups(groups, remote_limit=25):
