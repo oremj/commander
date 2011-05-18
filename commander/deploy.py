@@ -55,22 +55,8 @@ class Context(object):
 
 def hostgroups(groups, remote_limit=25):
     groups = _listify(groups)
-
-    def wrapper(f):
-
-        @wraps(f)
-        def inner_wrapper(*args, **kwargs):
-            t = ThreadPool(remote_limit)
-            for group in groups:
-                for host in get_systems(group):
-                    ctx = Context()
-                    ctx.set_host(host)
-                    t.add_func(f, ctx, *args, **kwargs)
-            t.run_all()
-
-        commands[f.__name__] = inner_wrapper
-        return inner_wrapper
-    return wrapper
+    hs = reduce(lambda x,y: x + y, [get_systems(group) for group in groups])
+    return hosts(hs, remote_limit)
 
 
 def hosts(hosts, remote_limit=25):
