@@ -1,5 +1,4 @@
 import os
-import sys
 import types
 from contextlib import contextmanager
 from functools import wraps
@@ -9,6 +8,7 @@ from commander.commands import local, remote, ThreadPool
 
 
 commands = {}
+
 
 def _listify(l):
     if isinstance(l, types.StringTypes):
@@ -55,7 +55,9 @@ class Context(object):
 
 def hostgroups(groups, remote_limit=25):
     groups = _listify(groups)
+
     def wrapper(f):
+
         @wraps(f)
         def inner_wrapper(*args, **kwargs):
             t = ThreadPool(remote_limit)
@@ -65,7 +67,7 @@ def hostgroups(groups, remote_limit=25):
                     ctx.set_host(host)
                     t.add_func(f, ctx, *args, **kwargs)
             t.run_all()
-        
+
         commands[f.__name__] = inner_wrapper
         return inner_wrapper
     return wrapper
@@ -73,7 +75,9 @@ def hostgroups(groups, remote_limit=25):
 
 def hosts(hosts, remote_limit=25):
     hosts = _listify(hosts)
+
     def wrapper(f):
+
         @wraps(f)
         def inner_wrapper(*args, **kwargs):
             t = ThreadPool(remote_limit)
@@ -82,7 +86,7 @@ def hosts(hosts, remote_limit=25):
                 ctx.set_host(host)
                 t.add_func(f, ctx, *args, **kwargs)
             t.run_all()
-        
+
         commands[f.__name__] = inner_wrapper
         return inner_wrapper
     return wrapper

@@ -28,5 +28,5 @@ def list_groups(color=True):
     for g in groups:
         group = g
         if color:
-            g = colorize(g, 'green') 
+            g = colorize(g, 'green')
         print "%s: %s" % (g, ",".join(get_systems(group)))

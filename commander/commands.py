@@ -49,6 +49,7 @@ class ThreadPool:
 
 _output_lock = Lock()
 
+
 def _remote_cmd(host, cmd, jumphost, ssh_key):
     extra = []
 
@@ -65,7 +66,9 @@ def _remote_cmd(host, cmd, jumphost, ssh_key):
 EOF""" % (" ".join(extra), host, cmd)
 
 
-def remote(hosts, cmd, jumphost=None, remote_limit=25, ssh_key=None, run_threaded=True):
+def remote(hosts, cmd, jumphost=None,
+            remote_limit=25, ssh_key=None, run_threaded=True):
+
     if isinstance(hosts, types.StringTypes):
         hosts = [hosts]
 

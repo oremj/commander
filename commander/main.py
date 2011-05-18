@@ -18,7 +18,7 @@ single quotes are required.
         return argstr.split(sep)
 
     before, _, after = argstr.partition(escaped_sep)
-    startlist = before.split(sep) # a regular split is fine here
+    startlist = before.split(sep)  # a regular split is fine here
     unfinished = startlist[-1]
     startlist = startlist[:-1]
 
@@ -29,7 +29,7 @@ single quotes are required.
     # part of the string sent in recursion is the rest of the escaped value.
     unfinished += sep + endlist[0]
 
-    return startlist + [unfinished] + endlist[1:] # put together all the parts
+    return startlist + [unfinished] + endlist[1:]  # put together all the parts
 
 
 def parse_arguments(arguments):
@@ -93,7 +93,7 @@ def main():
     cmdfile = args.pop(0)
     cmd_mod = import_cmdfile(cmdfile)
     cmds = parse_arguments(args)
-    
+
     if opts.list_commands:
         list_commands(cmd_mod.__doc__)
 
