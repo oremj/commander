@@ -88,7 +88,7 @@ def _run_command(host, cmd, full_cmd=None):
     if not full_cmd:
         full_cmd = cmd
 
-    stdout, stderr = run(full_cmd)
+    returncode, stdout, stderr = run(full_cmd)
 
     _output_lock.acquire(True)
     _log_lines(host, colorize("run", "blue"), cmd)
@@ -102,8 +102,9 @@ def local(cmd):
 
 
 def run(cmd):
-    return Popen(cmd, shell=True,
-                    stdout=PIPE, stderr=PIPE).communicate()
+    p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+    out, err = p.communicate()
+    return p.returncode, out, err
 
 
 def _log_lines(host, out_type, output):
