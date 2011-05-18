@@ -11,11 +11,11 @@ log = logging
 
 
 class ThreadPool:
-    
+
     def __init__(self, max_threads):
         self._thread_available = Semaphore(max_threads)
         self.threads = []
-    
+
     def _thread_func(self, f):
         def func(*args, **kwargs):
             try:
@@ -45,7 +45,7 @@ class ThreadPool:
         log.debug("Waiting for threads to finish")
         for t in self.threads:
             t.join()
-        
+
 
 _output_lock = Lock()
 
@@ -71,7 +71,7 @@ def remote(hosts, cmd, jumphost=None, remote_limit=25, ssh_key=None, run_threade
 
     if len(hosts) == 1 or remote_limit == 1:
         run_threaded = False
-    
+
     if run_threaded:
         t = ThreadPool(remote_limit)
         for host in hosts:
