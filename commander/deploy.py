@@ -17,6 +17,7 @@ def _listify(l):
 
 
 class Context(object):
+    """This class is passed to every deployment command as the first argument."""
 
     def __init__(self):
         self.env = {'host': None,
@@ -54,12 +55,20 @@ class Context(object):
 
 
 def hostgroups(groups, remote_limit=25):
+    """The same as hosts, except for it accepts a hostgroup or list of 
+    hostgroups.
+    """
     groups = _listify(groups)
     hs = reduce(lambda x, y: x + y, [get_systems(group) for group in groups])
     return hosts(hs, remote_limit)
 
 
 def hosts(hosts, remote_limit=25):
+    """Wraps a deployment function of the form def task(ctx, *args, **kwargs).
+       After task is wrapped it will be called as task(*args, **kwargs).
+       
+       The passed ctx objects will be set with a host from the hosts arg
+    """
     hosts = _listify(hosts)
 
     def wrapper(f):
@@ -79,6 +88,9 @@ def hosts(hosts, remote_limit=25):
 
 
 def local_command(f):
+    """This is the same as hosts, except it does not set a host in the ctx,
+    so this will be used for localhost deployment tasks
+    """
     @wraps(f)
     def wrapper(*args, **kwargs):
         f(Context(), *args, **kwargs)
