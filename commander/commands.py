@@ -1,6 +1,7 @@
 import logging
 import os
 import types
+from collections import namedtuple
 from subprocess import Popen, PIPE
 from threading import Lock, Semaphore, Thread
 
