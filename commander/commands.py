@@ -8,6 +8,7 @@ from commander.colorprint import colorize
 
 
 log = logging
+PStatus = namedtuple('PStatus', ['out', 'err', 'code'])
 
 
 class ThreadPool:
@@ -21,11 +22,10 @@ class ThreadPool:
             try:
                 f(*args, **kwargs)
             except Exception, e:
-                print e
-                pass
-
-            log.debug("Releasing semaphore")
-            self._thread_available.release()
+                raise e
+            finally:
+                log.debug("Releasing semaphore")
+                self._thread_available.release()
 
         return func
 
@@ -69,6 +69,9 @@ EOF""" % (" ".join(extra), host, cmd)
 def remote(hosts, cmd, jumphost=None,
             remote_limit=25, ssh_key=None, run_threaded=True):
 
+
+    status = {}
+
     if isinstance(hosts, types.StringTypes):
         hosts = [hosts]
 
@@ -79,19 +82,29 @@ def remote(hosts, cmd, jumphost=None,
         t = ThreadPool(remote_limit)
         for host in hosts:
             ssh_cmd = _remote_cmd(host, cmd, jumphost, ssh_key)
-            t.add_func(_run_command, host, cmd, ssh_cmd)
+            t.add_func(_threaded_run, status, host, cmd, ssh_cmd)
         t.run_all()
     else:
         for host in hosts:
             ssh_cmd = _remote_cmd(host, cmd, jumphost, ssh_key)
-            _run_command(host, cmd, ssh_cmd)
+            status[host] = _run_command(host, cmd, ssh_cmd)
+
+    return status
+
+
+def _threaded_run(status, host, *args, **kwargs):
+    """status: dict passed in that will be updated with the status
+       of _run_command
+    """
+    status[host] = _run_command(host, *args, **kwargs)
+    return status[host]
 
 
 def _run_command(host, cmd, full_cmd=None):
     if not full_cmd:
         full_cmd = cmd
 
-    returncode, stdout, stderr = run(full_cmd)
+    status = run(full_cmd)
 
     _output_lock.acquire(True)
     _log_lines(host, colorize("run", "blue"), cmd)
@@ -99,15 +112,17 @@ def _run_command(host, cmd, full_cmd=None):
     _log_lines(host, colorize("err", "red"), stderr)
     _output_lock.release()
 
+    return status
+
 
 def local(cmd):
-    _run_command("localhost", cmd)
+    return _run_command("localhost", cmd)
 
 
 def run(cmd):
     p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
     out, err = p.communicate()
-    return p.returncode, out, err
+    return PStatus(out=out, err=err, code=p.returncode)
 
 
 def _log_lines(host, out_type, output):

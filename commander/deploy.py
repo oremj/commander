@@ -34,7 +34,7 @@ class Context(object):
 
     def remote(self, cmd, *args, **kwargs):
         cmd = self._wrap_cmd(cmd, 'cwd')
-        return remote(self.env['host'], cmd, *args, **kwargs)
+        return remote(self.env['host'], cmd, *args, **kwargs).values()[0]
 
     def local(self, cmd, *args, **kwargs):
         cmd = self._wrap_cmd(cmd, 'lcwd')
