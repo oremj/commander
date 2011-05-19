@@ -1,8 +1,8 @@
 Commander
 =========
 Commander is two things:
-1) A deployment library modeled after fabric
-2) A remote command runner
+1. A deployment library modeled after fabric
+2. A remote command runner
 
 
 Deployment Libary
