@@ -55,7 +55,7 @@ class Context(object):
 
 def hostgroups(groups, remote_limit=25):
     groups = _listify(groups)
-    hs = reduce(lambda x,y: x + y, [get_systems(group) for group in groups])
+    hs = reduce(lambda x, y: x + y, [get_systems(group) for group in groups])
     return hosts(hs, remote_limit)
 
 
