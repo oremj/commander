@@ -64,8 +64,8 @@ def hostgroups(groups, remote_limit=25):
 
 
 def hosts(hosts, remote_limit=25):
-    """Wraps a deployment function of the form def task(ctx, *args, **kwargs).
-       After task is wrapped it will be called as task(*args, **kwargs).
+    """Wraps a deployment function of the form def task1(ctx, *args, **kwargs).
+       After task is wrapped it will be called as task1(*args, **kwargs).
        
        The passed ctx objects will be set with a host from the hosts arg
     """
@@ -87,7 +87,7 @@ def hosts(hosts, remote_limit=25):
     return wrapper
 
 
-def local_command(f):
+def task(f):
     """This is the same as hosts, except it does not set a host in the ctx,
     so this will be used for localhost deployment tasks
     """

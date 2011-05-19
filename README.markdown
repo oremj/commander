@@ -10,7 +10,7 @@ Deployment Libary
 -----------------
 A simple deployment example <example.py>
 
-    from commander.deploy import hosts, local_command
+    from commander.deploy import hosts
 
     @hosts(["host1", "host2", "host3"])
     def hostname(ctx):
