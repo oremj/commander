@@ -109,8 +109,8 @@ def _run_command(host, cmd, full_cmd=None):
 
     _output_lock.acquire(True)
     _log_lines(host, colorize("run", "blue"), cmd)
-    _log_lines(host, colorize("out", "yellow"), stdout)
-    _log_lines(host, colorize("err", "red"), stderr)
+    _log_lines(host, colorize("out", "yellow"), status.out)
+    _log_lines(host, colorize("err", "red"), status.err)
     _output_lock.release()
 
     return status
