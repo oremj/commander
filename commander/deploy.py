@@ -19,10 +19,15 @@ def _listify(l):
 class Context(object):
     """This class is passed to every deployment command as the first argument."""
 
-    def __init__(self):
+    def __init__(self, remote_kwargs=None):
         self.env = {'host': None,
                     'cwd': "",
                     'lcwd': ""}
+
+        if not remote_kwargs:
+            self.remote_kwargs = {}
+        else:
+            self.remote_kwargs = remote_kwargs
 
     def set_host(self, host):
         self.env['host'] = host
@@ -33,8 +38,11 @@ class Context(object):
         return cmd
 
     def remote(self, cmd, *args, **kwargs):
+        remote_kwargs = self.remote_kwargs.copy()
+        remote_kwargs.update(kwargs)
+
         cmd = self._wrap_cmd(cmd, 'cwd')
-        return remote(self.env['host'], cmd, *args, **kwargs).values()[0]
+        return remote(self.env['host'], cmd, *args, **remote_kwargs).values()[0]
 
     def local(self, cmd, *args, **kwargs):
         cmd = self._wrap_cmd(cmd, 'lcwd')
@@ -54,16 +62,16 @@ class Context(object):
         return self._set_path(path, "lcwd")
 
 
-def hostgroups(groups, remote_limit=25):
+def hostgroups(groups, remote_limit=25, remote_kwargs=None):
     """The same as hosts, except for it accepts a hostgroup or list of 
     hostgroups.
     """
     groups = _listify(groups)
     hs = reduce(lambda x, y: x + y, [get_systems(group) for group in groups])
-    return hosts(hs, remote_limit)
+    return hosts(hs, remote_limit, remote_kwargs)
 
 
-def hosts(hosts, remote_limit=25):
+def hosts(hosts, remote_limit=25, remote_kwargs=None):
     """Wraps a deployment function of the form def task1(ctx, *args, **kwargs).
        After task is wrapped it will be called as task1(*args, **kwargs).
        
@@ -77,7 +85,7 @@ def hosts(hosts, remote_limit=25):
         def inner_wrapper(*args, **kwargs):
             t = ThreadPool(remote_limit)
             for host in hosts:
-                ctx = Context()
+                ctx = Context(remote_kwargs=remote_kwargs)
                 ctx.set_host(host)
                 t.add_func(f, ctx, *args, **kwargs)
             t.run_all()
