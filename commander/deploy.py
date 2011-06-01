@@ -2,12 +2,15 @@ import os
 import types
 from contextlib import contextmanager
 from functools import wraps
+from threading import Lock
 
+from commander.colorprint import colorize
 from commander.hosts import get_systems
 from commander.commands import local, remote, ThreadPool
 
 
 commands = {}
+_output_lock = Lock()
 
 
 def _listify(l):
@@ -29,6 +32,29 @@ class Context(object):
         else:
             self.remote_kwargs = remote_kwargs
 
+
+    def _output(self, host, cmd, pstatus):
+        """Default: print to stdout"""
+        output = []
+        output.append("[%s] %s: %s" %
+                      (colorize(host, 'green'),
+                       colorize('run', 'yellow'), cmd.strip()))
+
+        for l in pstatus.out.splitlines():
+            output.append("[%s] %s: %s" %
+                          (colorize(host, 'green'),
+                           colorize('out', 'yellow'), l.strip()))
+
+        for l in pstatus.err.splitlines():
+            output.append("[%s] %s: %s" %
+                          (colorize(host, 'green'),
+                           colorize('err', 'red'), l.strip()))
+
+        _output_lock.acquire(True)
+        print "\n".join(output)
+        _output_lock.release()
+        
+
     def set_host(self, host):
         self.env['host'] = host
 
@@ -42,11 +68,16 @@ class Context(object):
         remote_kwargs.update(kwargs)
 
         cmd = self._wrap_cmd(cmd, 'cwd')
-        return remote(self.env['host'], cmd, *args, **remote_kwargs).values()[0]
+        status = remote(self.env['host'], cmd, output=False, *args, **remote_kwargs).values()[0]
+
+        self._output(self, self.env['host'], cmd, status)
+        return status
 
     def local(self, cmd, *args, **kwargs):
         cmd = self._wrap_cmd(cmd, 'lcwd')
-        return local(cmd, *args, **kwargs)
+        status = local(cmd, output=False, *args, **kwargs)
+        self._output(self, 'localhost', cmd, status)
+        return status
 
     @contextmanager
     def _set_path(self, path, which):

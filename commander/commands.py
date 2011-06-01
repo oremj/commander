@@ -68,7 +68,7 @@ EOF""" % (" ".join(extra), host, cmd)
 
 
 def remote(hosts, cmd, jumphost=None,
-            remote_limit=25, ssh_key=None, run_threaded=True):
+            remote_limit=25, ssh_key=None, run_threaded=True, output=True):
 
 
     status = {}
@@ -83,12 +83,12 @@ def remote(hosts, cmd, jumphost=None,
         t = ThreadPool(remote_limit)
         for host in hosts:
             ssh_cmd = _remote_cmd(host, cmd, jumphost, ssh_key)
-            t.add_func(_threaded_run, status, host, cmd, ssh_cmd)
+            t.add_func(_threaded_run, status, host, cmd, ssh_cmd, output=output)
         t.run_all()
     else:
         for host in hosts:
             ssh_cmd = _remote_cmd(host, cmd, jumphost, ssh_key)
-            status[host] = _run_command(host, cmd, ssh_cmd)
+            status[host] = _run_command(host, cmd, ssh_cmd, output=output)
 
     return status
 
@@ -101,23 +101,24 @@ def _threaded_run(status, host, *args, **kwargs):
     return status[host]
 
 
-def _run_command(host, cmd, full_cmd=None):
+def _run_command(host, cmd, full_cmd=None, output=True):
     if not full_cmd:
         full_cmd = cmd
 
     status = run(full_cmd)
 
-    _output_lock.acquire(True)
-    _log_lines(host, colorize("run", "blue"), cmd)
-    _log_lines(host, colorize("out", "yellow"), status.out)
-    _log_lines(host, colorize("err", "red"), status.err)
-    _output_lock.release()
+    if output:
+        _output_lock.acquire(True)
+        _log_lines(host, colorize("run", "blue"), cmd)
+        _log_lines(host, colorize("out", "yellow"), status.out)
+        _log_lines(host, colorize("err", "red"), status.err)
+        _output_lock.release()
 
     return status
 
 
-def local(cmd):
-    return _run_command("localhost", cmd)
+def local(cmd, output=True):
+    return _run_command("localhost", cmd, output=output)
 
 
 def run(cmd):
