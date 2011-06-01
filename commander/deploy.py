@@ -38,7 +38,7 @@ class Context(object):
         output = []
         output.append("[%s] %s: %s" %
                       (colorize(host, 'green'),
-                       colorize('run', 'yellow'), cmd.strip()))
+                       colorize('run', 'blue'), cmd.strip()))
 
         for l in pstatus.out.splitlines():
             output.append("[%s] %s: %s" %
