@@ -70,13 +70,13 @@ class Context(object):
         cmd = self._wrap_cmd(cmd, 'cwd')
         status = remote(self.env['host'], cmd, output=False, *args, **remote_kwargs).values()[0]
 
-        self._output(self, self.env['host'], cmd, status)
+        self._output(self.env['host'], cmd, status)
         return status
 
     def local(self, cmd, *args, **kwargs):
         cmd = self._wrap_cmd(cmd, 'lcwd')
         status = local(cmd, output=False, *args, **kwargs)
-        self._output(self, 'localhost', cmd, status)
+        self._output('localhost', cmd, status)
         return status
 
     @contextmanager
