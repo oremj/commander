@@ -107,12 +107,13 @@ def _run_command(host, cmd, full_cmd=None, output=True):
 
     if output:
         with _output_lock:
-            _log_lines(host, colorize("run", "blue"), cmd)
+            _log_lines(host, colorize("running", "blue"), cmd)
 
     status = run(full_cmd)
 
     if output:
         with _output_lock:
+            _log_lines(host, colorize("finished", "blue"), cmd)
             _log_lines(host, colorize("out", "yellow"), status.out)
             _log_lines(host, colorize("err", "red"), status.err)
 
