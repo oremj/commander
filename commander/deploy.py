@@ -1,4 +1,5 @@
 import os
+import time
 import types
 from contextlib import contextmanager
 from functools import wraps
@@ -32,12 +33,14 @@ class Context(object):
         else:
             self.remote_kwargs = remote_kwargs
 
-    def _command_out(self, host, cmd, pstatus):
+    def _command_out(self, host, cmd, pstatus, time):
         """Return formatted command output"""
         output = []
-        output.append("[%s] %s: %s" %
+        output.append("[%s] %s: %s (%0.3fs)" %
                       (colorize(host, 'green'),
-                       colorize('finished', 'blue'), cmd.strip()))
+                       colorize('finished', 'blue'),
+                       cmd.strip(),
+                       time))
 
         for l in pstatus.out.splitlines():
             output.append("[%s] %s: %s" %
@@ -77,18 +80,23 @@ class Context(object):
         remote_kwargs.update(kwargs)
 
         cmd = self._wrap_cmd(cmd, 'cwd')
+
         self._output(self._prerun_out(self.env['host'], cmd))
 
+        start = time.time()
         status = remote(self.env['host'], cmd, output=False, *args, **remote_kwargs).values()[0]
+        end = time.time()
 
-        self._output(self._command_out(self.env['host'], cmd, status))
+        self._output(self._command_out(self.env['host'], cmd, status, end - start))
         return status
 
     def local(self, cmd, *args, **kwargs):
         cmd = self._wrap_cmd(cmd, 'lcwd')
         self._output(self._prerun_out('localhost', cmd))
+        start = time.time()
         status = local(cmd, output=False, *args, **kwargs)
-        self._output(self._command_out('localhost', cmd, status))
+        end = time.time()
+        self._output(self._command_out('localhost', cmd, status, end - start))
         return status
 
     @contextmanager
