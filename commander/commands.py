@@ -105,14 +105,15 @@ def _run_command(host, cmd, full_cmd=None, output=True):
     if not full_cmd:
         full_cmd = cmd
 
+    with _output_lock:
+        _log_lines(host, colorize("run", "blue"), cmd)
+
     status = run(full_cmd)
 
     if output:
-        _output_lock.acquire(True)
-        _log_lines(host, colorize("run", "blue"), cmd)
-        _log_lines(host, colorize("out", "yellow"), status.out)
-        _log_lines(host, colorize("err", "red"), status.err)
-        _output_lock.release()
+        with _output_lock:
+            _log_lines(host, colorize("out", "yellow"), status.out)
+            _log_lines(host, colorize("err", "red"), status.err)
 
     return status
 
