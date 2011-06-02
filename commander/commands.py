@@ -1,5 +1,6 @@
 import logging
 import os
+import time
 import types
 from collections import namedtuple
 from subprocess import Popen, PIPE
@@ -109,11 +110,13 @@ def _run_command(host, cmd, full_cmd=None, output=True):
         with _output_lock:
             _log_lines(host, colorize("running", "blue"), cmd)
 
+    start = time.time()
     status = run(full_cmd)
+    end = time.time()
 
     if output:
         with _output_lock:
-            _log_lines(host, colorize("finished", "blue"), cmd)
+            _log_lines(host, colorize("finished", "blue"), "%s (%0.3fs)" % (cmd, end - start))
             _log_lines(host, colorize("out", "yellow"), status.out)
             _log_lines(host, colorize("err", "red"), status.err)
 
