@@ -105,8 +105,9 @@ def _run_command(host, cmd, full_cmd=None, output=True):
     if not full_cmd:
         full_cmd = cmd
 
-    with _output_lock:
-        _log_lines(host, colorize("run", "blue"), cmd)
+    if output:
+        with _output_lock:
+            _log_lines(host, colorize("run", "blue"), cmd)
 
     status = run(full_cmd)
 

@@ -32,13 +32,12 @@ class Context(object):
         else:
             self.remote_kwargs = remote_kwargs
 
-
-    def _output(self, host, cmd, pstatus):
-        """Default: print to stdout"""
+    def _command_out(self, host, cmd, pstatus):
+        """Return formatted command output"""
         output = []
         output.append("[%s] %s: %s" %
                       (colorize(host, 'green'),
-                       colorize('run', 'blue'), cmd.strip()))
+                       colorize('finished', 'blue'), cmd.strip()))
 
         for l in pstatus.out.splitlines():
             output.append("[%s] %s: %s" %
@@ -50,8 +49,18 @@ class Context(object):
                           (colorize(host, 'green'),
                            colorize('err', 'red'), l.strip()))
 
+        return "\n".join(output)
+
+    def _prerun_out(self, host, cmd):
+        """Formatted output for command before it starts running"""
+        return "[%s] %s: %s" % (colorize(host, 'green'),
+                                colorize('running', 'blue'), cmd.strip())
+        
+
+    def _output(self, out):
+        """Default: print to stdout"""
         _output_lock.acquire(True)
-        print "\n".join(output)
+        print out
         _output_lock.release()
         
 
@@ -68,15 +77,18 @@ class Context(object):
         remote_kwargs.update(kwargs)
 
         cmd = self._wrap_cmd(cmd, 'cwd')
+        self._output(self._prerun_out(self.env['host'], cmd))
+
         status = remote(self.env['host'], cmd, output=False, *args, **remote_kwargs).values()[0]
 
-        self._output(self.env['host'], cmd, status)
+        self._output(self._command_out(self.env['host'], cmd, status))
         return status
 
     def local(self, cmd, *args, **kwargs):
         cmd = self._wrap_cmd(cmd, 'lcwd')
+        self._output(self._prerun_out('localhost', cmd))
         status = local(cmd, output=False, *args, **kwargs)
-        self._output('localhost', cmd, status)
+        self._output(self._command_out('localhost', cmd, status))
         return status
 
     @contextmanager
