@@ -10,7 +10,7 @@ def cmd_status(run_time, host, cmd, pstatus):
     if pstatus.out:
         out.append(prefixlines(host, "out", pstatus.out, "yellow"))
     if pstatus.err:
-        out.append(prefixlines(host, "err", pstatus.out, "red"))
+        out.append(prefixlines(host, "err", pstatus.err, "red"))
     return "\n".join(out)
 
 
