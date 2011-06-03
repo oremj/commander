@@ -1,16 +1,14 @@
 import logging
 import os
 import time
-from collections import namedtuple
 from subprocess import Popen, PIPE
 from threading import Lock, Semaphore, Thread
 
-from commander.colorprint import colorize
-from commander.utils import cmd_status, listify, prefixlines
+from commander.ssh import SSHExecClient
+from commander.utils import cmd_status, listify, prefixlines, PStatus
 
 
 log = logging
-PStatus = namedtuple('PStatus', ['out', 'err', 'code'])
 
 
 class ThreadPool:
@@ -81,35 +79,37 @@ def remote(hosts, cmd, jumphost=None,
     if run_threaded:
         t = ThreadPool(remote_limit)
         for host in hosts:
-            ssh_cmd = _remote_cmd(host, cmd, jumphost, ssh_key)
-            t.add_func(_threaded_run, status, host, cmd, ssh_cmd, output=output)
+            ssh_client = SSHExecClient(host, ssh_key, jumphost)
+            t.add_func(_threaded_run, status, ssh_client, cmd, output=output)
         t.run_all()
     else:
         for host in hosts:
-            ssh_cmd = _remote_cmd(host, cmd, jumphost, ssh_key)
-            status[host] = _run_command(host, cmd, ssh_cmd, output=output)
+            ssh_client = SSHExecClient(host, ssh_key, jumphost)
+            status[host] = _run_command(host, cmd, ssh_client.run, output=output)
 
     return status
 
 
-def _threaded_run(status, host, *args, **kwargs):
+def _threaded_run(status, client, cmd, *args, **kwargs):
     """status: dict passed in that will be updated with the status
        of _run_command
     """
-    status[host] = _run_command(host, *args, **kwargs)
-    return status[host]
+    status[client.host] = _run_command(client.host,
+                                       cmd, client.run, *args, **kwargs)
+    return status[client.host]
 
 
-def _run_command(host, cmd, full_cmd=None, output=True):
-    if not full_cmd:
-        full_cmd = cmd
+def _run_command(host, cmd, runner, output=True):
+    """runner: function which runs the command, must be of the form f(cmd)
+               and return a Pstatus named-tuple
+    """
 
     if output:
         with _output_lock:
             print prefixlines(host, "running", cmd, "blue")
 
     start = time.time()
-    status = run(full_cmd)
+    status = runner(cmd)
     end = time.time()
 
     if output:
@@ -120,7 +120,7 @@ def _run_command(host, cmd, full_cmd=None, output=True):
 
 
 def local(cmd, output=True):
-    return _run_command("localhost", cmd, output=output)
+    return _run_command("localhost", cmd, run, output=output)
 
 
 def run(cmd):

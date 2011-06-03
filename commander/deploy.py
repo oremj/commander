@@ -4,7 +4,6 @@ from contextlib import contextmanager
 from functools import wraps
 from threading import Lock
 
-from commander.colorprint import colorize
 from commander.hosts import get_systems
 from commander.commands import local, remote, ThreadPool
 from commander.utils import cmd_status, listify, prefixlines
