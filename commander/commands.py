@@ -1,12 +1,12 @@
 import logging
 import os
 import time
-import types
 from collections import namedtuple
 from subprocess import Popen, PIPE
 from threading import Lock, Semaphore, Thread
 
 from commander.colorprint import colorize
+from commander.utils import cmd_status, listify, prefixlines
 
 
 log = logging
@@ -71,11 +71,9 @@ EOF""" % (" ".join(extra), host, cmd)
 def remote(hosts, cmd, jumphost=None,
             remote_limit=25, ssh_key=None, run_threaded=True, output=True):
 
-
     status = {}
 
-    if isinstance(hosts, types.StringTypes):
-        hosts = [hosts]
+    hosts = listify(hosts)
 
     if len(hosts) == 1 or remote_limit == 1:
         run_threaded = False
@@ -108,7 +106,7 @@ def _run_command(host, cmd, full_cmd=None, output=True):
 
     if output:
         with _output_lock:
-            _log_lines(host, colorize("running", "blue"), cmd)
+            print prefixlines(host, "running", cmd, "blue")
 
     start = time.time()
     status = run(full_cmd)
@@ -116,9 +114,7 @@ def _run_command(host, cmd, full_cmd=None, output=True):
 
     if output:
         with _output_lock:
-            _log_lines(host, colorize("finished", "blue"), "%s (%0.3fs)" % (cmd, end - start))
-            _log_lines(host, colorize("out", "yellow"), status.out)
-            _log_lines(host, colorize("err", "red"), status.err)
+            print cmd_status(end - start, host, cmd, status)
 
     return status
 
@@ -131,8 +127,3 @@ def run(cmd):
     p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
     out, err = p.communicate()
     return PStatus(out=out, err=err, code=p.returncode)
-
-
-def _log_lines(host, out_type, output):
-    for l in output.splitlines():
-        print '[%s] %s: %s' % (colorize(host, 'green'), out_type, l.strip())

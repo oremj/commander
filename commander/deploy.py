@@ -1,6 +1,5 @@
 import os
 import time
-import types
 from contextlib import contextmanager
 from functools import wraps
 from threading import Lock
@@ -8,16 +7,11 @@ from threading import Lock
 from commander.colorprint import colorize
 from commander.hosts import get_systems
 from commander.commands import local, remote, ThreadPool
+from commander.utils import cmd_status, listify, prefixlines
 
 
 commands = {}
 _output_lock = Lock()
-
-
-def _listify(l):
-    if isinstance(l, types.StringTypes):
-        l = [l]
-    return l
 
 
 class Context(object):
@@ -33,39 +27,10 @@ class Context(object):
         else:
             self.remote_kwargs = remote_kwargs
 
-    def _command_out(self, host, cmd, pstatus, time):
-        """Return formatted command output"""
-        output = []
-        output.append("[%s] %s: %s (%0.3fs)" %
-                      (colorize(host, 'green'),
-                       colorize('finished', 'blue'),
-                       cmd.strip(),
-                       time))
-
-        for l in pstatus.out.splitlines():
-            output.append("[%s] %s: %s" %
-                          (colorize(host, 'green'),
-                           colorize('out', 'yellow'), l.strip()))
-
-        for l in pstatus.err.splitlines():
-            output.append("[%s] %s: %s" %
-                          (colorize(host, 'green'),
-                           colorize('err', 'red'), l.strip()))
-
-        return "\n".join(output)
-
-    def _prerun_out(self, host, cmd):
-        """Formatted output for command before it starts running"""
-        return "[%s] %s: %s" % (colorize(host, 'green'),
-                                colorize('running', 'blue'), cmd.strip())
-        
-
     def _output(self, out):
         """Default: print to stdout"""
-        _output_lock.acquire(True)
-        print out
-        _output_lock.release()
-        
+        with _output_lock:
+            print out
 
     def set_host(self, host):
         self.env['host'] = host
@@ -81,22 +46,22 @@ class Context(object):
 
         cmd = self._wrap_cmd(cmd, 'cwd')
 
-        self._output(self._prerun_out(self.env['host'], cmd))
+        self._output(prefixlines(self.env['host'], "running", cmd, "blue"))
 
         start = time.time()
         status = remote(self.env['host'], cmd, output=False, *args, **remote_kwargs).values()[0]
         end = time.time()
 
-        self._output(self._command_out(self.env['host'], cmd, status, end - start))
+        self._output(cmd_status(end - start, self.env['host'], cmd, status))
         return status
 
     def local(self, cmd, *args, **kwargs):
         cmd = self._wrap_cmd(cmd, 'lcwd')
-        self._output(self._prerun_out('localhost', cmd))
+        self._output(prefixlines('localhost', "running", cmd, "blue"))
         start = time.time()
         status = local(cmd, output=False, *args, **kwargs)
         end = time.time()
-        self._output(self._command_out('localhost', cmd, status, end - start))
+        self._output(cmd_status(end - start, 'localhost', cmd, status))
         return status
 
     @contextmanager
@@ -114,10 +79,10 @@ class Context(object):
 
 
 def hostgroups(groups, remote_limit=25, remote_kwargs=None):
-    """The same as hosts, except for it accepts a hostgroup or list of 
+    """The same as hosts, except for it accepts a hostgroup or list of
     hostgroups.
     """
-    groups = _listify(groups)
+    groups = listify(groups)
     hs = reduce(lambda x, y: x + y, [get_systems(group) for group in groups])
     return hosts(hs, remote_limit, remote_kwargs)
 
@@ -125,10 +90,10 @@ def hostgroups(groups, remote_limit=25, remote_kwargs=None):
 def hosts(hosts, remote_limit=25, remote_kwargs=None):
     """Wraps a deployment function of the form def task1(ctx, *args, **kwargs).
        After task is wrapped it will be called as task1(*args, **kwargs).
-       
+
        The passed ctx objects will be set with a host from the hosts arg
     """
-    hosts = _listify(hosts)
+    hosts = listify(hosts)
 
     def wrapper(f):
 
