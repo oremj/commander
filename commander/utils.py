@@ -7,8 +7,8 @@ def cmd_status(run_time, host, cmd, pstatus):
     out = []
     out.append(
         prefixlines(host, "finished", "%s (%0.3fs)" % (cmd, run_time), "blue"))
-    out.append(prefixlines(host, "out", status.out, "yellow"))
-    out.append(prefixlines(host, "err", status.out, "red"))
+    out.append(prefixlines(host, "out", pstatus.out, "yellow"))
+    out.append(prefixlines(host, "err", pstatus.out, "red"))
     return "\n".join(out)
 
 
