@@ -90,11 +90,13 @@ def main():
         help="print list of possible commands and exit"
     )
     opts, args = parser.parse_args()
+    if not args:
+        parser.error("Please specify a cmdfile.")
     cmdfile = args.pop(0)
     cmd_mod = import_cmdfile(cmdfile)
     cmds = parse_arguments(args)
 
-    if opts.list_commands:
+    if opts.list_commands or not cmds:
         list_commands(cmd_mod.__doc__)
 
     for cmd, args, kwargs in cmds:
