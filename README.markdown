@@ -5,6 +5,16 @@ Commander is two things:
 1. A deployment library modeled after fabric
 2. A remote command runner
 
+### Improvements over fabric
+- Ability to run commands in parallel
+- Tasks can be called as functions from python
+- Avoids using a global state to allow for easier parallelism
+- Switchable ssh backend (in progress)
+
+### Why fabric is better
+- Larger community
+- More mature
+- More features
 
 Deployment Libary
 -----------------
