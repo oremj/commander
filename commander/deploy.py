@@ -7,10 +7,15 @@ from threading import Lock
 from commander.hosts import get_systems
 from commander.commands import local, remote, ThreadPool
 from commander.utils import cmd_status, listify, prefixlines
+from commander.settings import config
 
 
 commands = {}
 _output_lock = Lock()
+
+
+class BadReturnCode(Exception):
+    pass
 
 
 class Context(object):
@@ -34,6 +39,10 @@ class Context(object):
     def set_host(self, host):
         self.env['host'] = host
 
+    def _check_status(self, status):
+        if config['failonerror'] and status.code != 0:
+            raise BadReturnCode("Returncode was %d" % status.code)
+
     def _wrap_cmd(self, cmd, which):
         if self.env[which]:
             cmd = "cd %s && %s" % (self.env[which], cmd)
@@ -52,6 +61,7 @@ class Context(object):
         end = time.time()
 
         self._output(cmd_status(end - start, self.env['host'], cmd, status))
+        self._check_status(status)
         return status
 
     def local(self, cmd, *args, **kwargs):
@@ -61,6 +71,7 @@ class Context(object):
         status = local(cmd, output=False, *args, **kwargs)
         end = time.time()
         self._output(cmd_status(end - start, 'localhost', cmd, status))
+        self._check_status(status)
         return status
 
     @contextmanager

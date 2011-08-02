@@ -2,6 +2,7 @@
 import imp
 import sys
 from commander.deploy import commands
+from commander.settings import config
 from optparse import OptionParser
 
 
@@ -87,8 +88,11 @@ def main():
         action='store_true',
         dest='list_commands',
         default=False,
-        help="print list of possible commands and exit"
-    )
+        help="print list of possible commands and exit")
+    parser.add_option('--nofail',
+        action='store_true',
+        default=False,
+        help="Do not fail on non-zero return codes")
     opts, args = parser.parse_args()
     if not args:
         parser.error("Please specify a cmdfile.")
@@ -98,6 +102,9 @@ def main():
 
     if opts.list_commands or not cmds:
         list_commands(cmd_mod.__doc__)
+
+    if opts.nofail:
+        config['failonerror'] = False
 
     for cmd, args, kwargs in cmds:
         print "Running '%s'" % cmd
