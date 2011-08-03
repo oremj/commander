@@ -5,10 +5,10 @@ from commander.colorprint import colorize
 
 PStatus = namedtuple('PStatus', ['out', 'err', 'code'])
 
-def cmd_status(run_time, host, cmd, pstatus):
+def cmd_status(run_time, host, cmd, pstatus, state='finished', color='blue'):
     out = []
     out.append(
-        prefixlines(host, "finished", "%s (%0.3fs)" % (cmd, run_time), "blue"))
+        prefixlines(host, state, "%s (%0.3fs)" % (cmd, run_time), color))
     if pstatus.out:
         out.append(prefixlines(host, "out", pstatus.out, "yellow"))
     if pstatus.err:

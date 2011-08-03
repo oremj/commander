@@ -9,7 +9,6 @@ from commander.commands import local, remote, ThreadPool
 from commander.utils import cmd_status, listify, prefixlines
 from commander.settings import config
 
-
 commands = {}
 _output_lock = Lock()
 
@@ -60,8 +59,14 @@ class Context(object):
         status = remote(self.env['host'], cmd, output=False, *args, **remote_kwargs).values()[0]
         end = time.time()
 
+        try:
+            self._check_status(status)
+        except BadReturnCode:
+            self._output(cmd_status(end - start, self.env['host'], cmd,
+                                    status, state='failed', color="red"))
+            raise
+
         self._output(cmd_status(end - start, self.env['host'], cmd, status))
-        self._check_status(status)
         return status
 
     def local(self, cmd, *args, **kwargs):
@@ -70,8 +75,14 @@ class Context(object):
         start = time.time()
         status = local(cmd, output=False, *args, **kwargs)
         end = time.time()
+        try:
+            self._check_status(status)
+        except BadReturnCode:
+            self._output(cmd_status(end - start, 'localhost', cmd,
+                                    status, state='failed', color="red"))
+            raise
+
         self._output(cmd_status(end - start, 'localhost', cmd, status))
-        self._check_status(status)
         return status
 
     @contextmanager
@@ -86,6 +97,18 @@ class Context(object):
 
     def lcd(self, path):
         return self._set_path(path, "lcwd")
+
+
+def catch_badreturn(f):
+
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+        except BadReturnCode:
+            exit(1)
+
+    return wrapper
 
 
 def hostgroups(groups, remote_limit=25, remote_kwargs=None):
@@ -106,7 +129,7 @@ def hosts(hosts, remote_limit=25, remote_kwargs=None):
     hosts = listify(hosts)
 
     def wrapper(f):
-
+        f = catch_badreturn(f)
         @wraps(f)
         def inner_wrapper(*args, **kwargs):
             t = ThreadPool(remote_limit)
@@ -125,9 +148,10 @@ def task(f):
     """This is the same as hosts, except it does not set a host in the ctx,
     so this will be used for localhost deployment tasks
     """
+    f = catch_badreturn(f)
     @wraps(f)
     def wrapper(*args, **kwargs):
-        f(Context(), *args, **kwargs)
+        return f(Context(), *args, **kwargs)
 
     commands[f.__name__] = wrapper
     return wrapper
