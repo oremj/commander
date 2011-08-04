@@ -107,7 +107,6 @@ def main():
         config['failonerror'] = False
 
     for cmd, args, kwargs in cmds:
-        print "Running '%s'" % cmd
         commands[cmd](*args, **kwargs)
 
 if __name__ == "__main__":
