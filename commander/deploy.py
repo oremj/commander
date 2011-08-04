@@ -129,11 +129,11 @@ def hosts(hosts, remote_limit=25, remote_kwargs=None):
     hosts = listify(hosts)
 
     def wrapper(f):
-        print 'Running', getattr(f, '__name__', repr(f))
-        f = catch_badreturn(f)
 
+        f = catch_badreturn(f)
         @wraps(f)
         def inner_wrapper(*args, **kwargs):
+            print 'Running', getattr(f, '__name__', repr(f))
             t = ThreadPool(remote_limit)
             for host in hosts:
                 ctx = Context(remote_kwargs=remote_kwargs)
