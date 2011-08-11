@@ -1,9 +1,15 @@
 #!/usr/bin/python
 import imp
+import logging
 import sys
 from commander.deploy import commands
 from commander.settings import config
 from optparse import OptionParser
+
+
+logging.basicConfig(format='[%(asctime)s] %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S',
+                    level=logging.INFO)
 
 
 def _escape_split(sep, argstr):
@@ -83,7 +89,8 @@ def import_cmdfile(cmdfile):
 
 
 def main():
-    parser = OptionParser(usage="commander [options] <cmdfile> <command>[:arg1,arg2=val2,...] ...")
+    parser = OptionParser(usage='commander [options] <cmdfile> '
+                                '<command>[:arg1,arg2=val2,...] ...')
     parser.add_option('-l', '--list',
         action='store_true',
         dest='list_commands',

@@ -85,7 +85,8 @@ def remote(hosts, cmd, jumphost=None,
     else:
         for host in hosts:
             ssh_client = SSHExecClient(host, ssh_key, jumphost)
-            status[host] = _run_command(host, cmd, ssh_client.run, output=output)
+            status[host] = _run_command(host, cmd, ssh_client.run,
+                                        output=output)
 
     return status
 
@@ -106,7 +107,7 @@ def _run_command(host, cmd, runner, output=True):
 
     if output:
         with _output_lock:
-            print prefixlines(host, "running", cmd, "blue")
+            logging.info(prefixlines(host, "running", cmd, "blue"))
 
     start = time.time()
     status = runner(cmd)
@@ -114,7 +115,7 @@ def _run_command(host, cmd, runner, output=True):
 
     if output:
         with _output_lock:
-            print cmd_status(end - start, host, cmd, status)
+            logging.info(cmd_status(end - start, host, cmd, status))
 
     return status
 

@@ -1,3 +1,4 @@
+import logging
 import os
 import time
 from contextlib import contextmanager
@@ -18,7 +19,7 @@ class BadReturnCode(Exception):
 
 
 class Context(object):
-    """This class is passed to every deployment command as the first argument."""
+    """This class is passed to every deployment command as the first arg."""
 
     def __init__(self, remote_kwargs=None):
         self.env = {'host': None,
@@ -33,7 +34,7 @@ class Context(object):
     def _output(self, out):
         """Default: print to stdout"""
         with _output_lock:
-            print out
+            logging.info(out)
 
     def set_host(self, host):
         self.env['host'] = host
@@ -56,7 +57,8 @@ class Context(object):
         self._output(prefixlines(self.env['host'], "running", cmd, "blue"))
 
         start = time.time()
-        status = remote(self.env['host'], cmd, output=False, *args, **remote_kwargs).values()[0]
+        status = remote(self.env['host'], cmd, output=False,
+                        *args, **remote_kwargs).values()[0]
         end = time.time()
 
         try:
@@ -129,11 +131,10 @@ def hosts(hosts, remote_limit=25, remote_kwargs=None):
     hosts = listify(hosts)
 
     def wrapper(f):
-
         f = catch_badreturn(f)
         @wraps(f)
         def inner_wrapper(*args, **kwargs):
-            print 'Running', getattr(f, '__name__', repr(f))
+            logging.info('Running', getattr(f, '__name__', repr(f)))
             t = ThreadPool(remote_limit)
             for host in hosts:
                 ctx = Context(remote_kwargs=remote_kwargs)
@@ -153,7 +154,7 @@ def task(f):
     f = catch_badreturn(f)
     @wraps(f)
     def wrapper(*args, **kwargs):
-        print 'Running', getattr(f, '__name__', repr(f))
+        logging.info('Running', getattr(f, '__name__', repr(f)))
         return f(Context(), *args, **kwargs)
 
     commands[f.__name__] = wrapper
