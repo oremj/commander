@@ -4,6 +4,7 @@ import time
 from subprocess import Popen, PIPE
 from threading import Lock, Semaphore, Thread
 
+import commander.settings
 from commander.ssh import SSHExecClient
 from commander.utils import cmd_status, listify, prefixlines, PStatus
 
