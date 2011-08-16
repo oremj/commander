@@ -1,15 +1,11 @@
 #!/usr/bin/python
 import imp
-import logging
 import sys
 from commander.deploy import commands
 from commander.settings import config
 from optparse import OptionParser
 
 
-logging.basicConfig(format='[%(asctime)s] %(message)s',
-                    datefmt='%Y-%m-%d %H:%M:%S',
-                    level=logging.INFO)
 
 
 def _escape_split(sep, argstr):
