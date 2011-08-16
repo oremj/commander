@@ -9,6 +9,7 @@ class SSHClient(object):
         self.host = host
         self.identity_file = identity_file
         self.jumphost = jumphost
+        self.control_master = control_master
 
     def run(self, cmd):
         raise NotImplementedError() 
