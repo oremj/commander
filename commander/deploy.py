@@ -134,7 +134,7 @@ def hosts(hosts, remote_limit=25, remote_kwargs=None):
         f = catch_badreturn(f)
         @wraps(f)
         def inner_wrapper(*args, **kwargs):
-            logging.info('Running', getattr(f, '__name__', repr(f)))
+            logging.info('Running %s' % getattr(f, '__name__', repr(f)))
             t = ThreadPool(remote_limit)
             for host in hosts:
                 ctx = Context(remote_kwargs=remote_kwargs)
@@ -154,7 +154,7 @@ def task(f):
     f = catch_badreturn(f)
     @wraps(f)
     def wrapper(*args, **kwargs):
-        logging.info('Running', getattr(f, '__name__', repr(f)))
+        logging.info('Running %s' % getattr(f, '__name__', repr(f)))
         return f(Context(), *args, **kwargs)
 
     commands[f.__name__] = wrapper
