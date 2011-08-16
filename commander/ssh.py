@@ -24,7 +24,6 @@ class SSHExecClient(SSHClient):
         if self.control_master:
             extra.append('-o "ControlMaster auto"')
             extra.append('-o "ControlPath /tmp/commander_mux_%h_%p_%r"')
-            extra.append('-o "ControlPersist 10m"')
 
         if self.identity_file:
             if os.path.isfile(self.identity_file):
