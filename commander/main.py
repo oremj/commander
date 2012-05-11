@@ -6,8 +6,6 @@ from commander.settings import config
 from optparse import OptionParser
 
 
-
-
 def _escape_split(sep, argstr):
     """
 Allows for escaping of the separator: e.g. task:arg='foo\, bar'

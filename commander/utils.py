@@ -5,6 +5,7 @@ from commander.colorprint import colorize
 
 PStatus = namedtuple('PStatus', ['out', 'err', 'code'])
 
+
 def cmd_status(run_time, host, cmd, pstatus, state='finished', color='blue'):
     out = []
     out.append(
