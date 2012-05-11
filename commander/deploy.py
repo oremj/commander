@@ -132,6 +132,7 @@ def hosts(hosts, remote_limit=25, remote_kwargs=None):
 
     def wrapper(f):
         f = catch_badreturn(f)
+
         @wraps(f)
         def inner_wrapper(*args, **kwargs):
             logging.info('Running %s' % getattr(f, '__name__', repr(f)))
@@ -141,6 +142,7 @@ def hosts(hosts, remote_limit=25, remote_kwargs=None):
                 ctx.set_host(host)
                 t.add_func(f, ctx, *args, **kwargs)
             t.run_all()
+            logging.info('Finished %s' % getattr(f, '__name__', repr(f)))
 
         commands[f.__name__] = inner_wrapper
         return inner_wrapper
@@ -152,10 +154,13 @@ def task(f):
     so this will be used for localhost deployment tasks
     """
     f = catch_badreturn(f)
+
     @wraps(f)
     def wrapper(*args, **kwargs):
         logging.info('Running %s' % getattr(f, '__name__', repr(f)))
-        return f(Context(), *args, **kwargs)
+        res = f(Context(), *args, **kwargs)
+        logging.info('Finished %s' % getattr(f, '__name__', repr(f)))
+        return res
 
     commands[f.__name__] = wrapper
     return wrapper
