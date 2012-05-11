@@ -141,8 +141,11 @@ def hosts(hosts, remote_limit=25, remote_kwargs=None):
                 ctx = Context(remote_kwargs=remote_kwargs)
                 ctx.set_host(host)
                 t.add_func(f, ctx, *args, **kwargs)
+            start = time.time()
             t.run_all()
-            logging.info('Finished %s' % getattr(f, '__name__', repr(f)))
+            end = time.time()
+            logging.info('Finished %s (%0.3fs)' %
+                          (getattr(f, '__name__', repr(f)), end - start))
 
         commands[f.__name__] = inner_wrapper
         return inner_wrapper
@@ -158,8 +161,11 @@ def task(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
         logging.info('Running %s' % getattr(f, '__name__', repr(f)))
+        start = time.time()
         res = f(Context(), *args, **kwargs)
-        logging.info('Finished %s' % getattr(f, '__name__', repr(f)))
+        end = time.time()
+        logging.info('Finished %s (%0.3fs)' %
+                     (getattr(f, '__name__', repr(f)), end - start))
         return res
 
     commands[f.__name__] = wrapper
