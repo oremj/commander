@@ -31,10 +31,10 @@ class Context(object):
         else:
             self.remote_kwargs = remote_kwargs
 
-    def _output(self, out):
+    def _output(self, out, log=logging.info):
         """Default: print to stdout"""
         with _output_lock:
-            logging.info(out)
+            log(out)
 
     def set_host(self, host):
         self.env['host'] = host
@@ -65,7 +65,8 @@ class Context(object):
             self._check_status(status)
         except BadReturnCode:
             self._output(cmd_status(end - start, self.env['host'], cmd,
-                                    status, state='failed', color="red"))
+                                    status, state='failed', color="red"),
+                         logging.warning)
             raise
 
         self._output(cmd_status(end - start, self.env['host'], cmd, status))
@@ -81,7 +82,8 @@ class Context(object):
             self._check_status(status)
         except BadReturnCode:
             self._output(cmd_status(end - start, 'localhost', cmd,
-                                    status, state='failed', color="red"))
+                                    status, state='failed', color="red"),
+                         logging.warning)
             raise
 
         self._output(cmd_status(end - start, 'localhost', cmd, status))
