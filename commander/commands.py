@@ -32,7 +32,7 @@ class ThreadPool:
 
     def add_func(self, f, *args, **kwargs):
         t = Thread(target=self._thread_func(f),
-                            args=args, kwargs=kwargs)
+                   args=args, kwargs=kwargs)
         t.daemon = True
         self.threads.append(t)
 
@@ -68,7 +68,7 @@ EOF""" % (" ".join(extra), host, cmd)
 
 
 def remote(hosts, cmd, jumphost=None,
-            remote_limit=25, ssh_key=None, run_threaded=True, output=True):
+           remote_limit=25, ssh_key=None, run_threaded=True, output=True):
 
     status = {}
 

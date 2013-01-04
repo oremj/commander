@@ -147,7 +147,7 @@ def hosts(hosts, remote_limit=25, remote_kwargs=None):
             t.run_all()
             end = time.time()
             logging.info('Finished %s (%0.3fs)' %
-                          (getattr(f, '__name__', repr(f)), end - start))
+                         (getattr(f, '__name__', repr(f)), end - start))
 
         commands[f.__name__] = inner_wrapper
         return inner_wrapper

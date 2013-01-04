@@ -21,7 +21,7 @@ class SSHExecClient(SSHClient):
         extra = []
         if self.jumphost:
             extra.append('-o "ProxyCommand ssh -A %s nc %%h %%p' %
-                          self.jumphost)
+                         self.jumphost)
 
         if self.control_master:
             extra.append('-o "ControlMaster auto"')

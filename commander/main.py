@@ -85,12 +85,14 @@ def import_cmdfile(cmdfile):
 def main():
     parser = OptionParser(usage='commander [options] <cmdfile> '
                                 '<command>[:arg1,arg2=val2,...] ...')
-    parser.add_option('-l', '--list',
+    parser.add_option(
+        '-l', '--list',
         action='store_true',
         dest='list_commands',
         default=False,
         help="print list of possible commands and exit")
-    parser.add_option('--nofail',
+    parser.add_option(
+        '--nofail',
         action='store_true',
         default=False,
         help="Do not fail on non-zero return codes")
