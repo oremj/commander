@@ -10,21 +10,20 @@ if '/etc' not in sys.path:
     added_to_path = True
 
 try:
-    import commanderconfig
+    from commanderconfig import hostgroups
 except ImportError:
-    print "Couldn't import config. Please create /etc/commanderconfig.py"
-    sys.exit(1)
+    hostgroups = {}
 
 if added_to_path:
     del sys.path[0]
 
 
 def get_systems(host_group):
-    return commanderconfig.hostgroups[host_group]
+    return hostgroups.get(host_group, [])
 
 
 def list_groups(color=True):
-    groups = sorted(commanderconfig.hostgroups.keys())
+    groups = sorted(hostgroups.keys())
     for g in groups:
         group = g
         if color:
