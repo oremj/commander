@@ -37,9 +37,12 @@ if __name__ == "__main__":
         list_groups()
     else:
         hosts = get_systems(args[0])
-        if sys.stdin.isatty():
+        if args[1:]:
             command = " ".join(args[1:])
-        else:
+        elif not sys.stdin.isatty():
             command = sys.stdin.read().strip()
+        else:
+            print "You must specify a command."
+            sys.exit(1)
 
         remote(hosts, command, remote_limit=int(options.count), ssh_key=options.identity)
