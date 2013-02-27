@@ -8,23 +8,23 @@ if __name__ == "__main__":
     parser = OptionParser()
 
     parser.add_option("-l", "--list",
-              action="store_true",
-              help="list systems in group")
+                      action="store_true",
+                      help="list systems in group")
 
     parser.add_option("-g", "--list-groups",
-              action="store_true",
-              help="list systems in group")
+                      action="store_true",
+                      help="list systems in group")
 
     parser.add_option("--list-complete-groups",
-              action="store_true",
-              help="list systems in group")
+                      action="store_true",
+                      help="list systems in group")
 
     parser.add_option("-c", "--count",
-              default=25,
-              help="number of systems to run cmd on at once")
+                      default=25,
+                      help="number of systems to run cmd on at once")
 
     parser.add_option("-i", "--identity",
-              help="path to ssh private key")
+                      help="path to ssh private key")
 
     parser.disable_interspersed_args()
     (options, args) = parser.parse_args()
@@ -45,4 +45,5 @@ if __name__ == "__main__":
             print "You must specify a command."
             sys.exit(1)
 
-        remote(hosts, command, remote_limit=int(options.count), ssh_key=options.identity)
+        remote(hosts, command, remote_limit=int(options.count),
+               ssh_key=options.identity)
