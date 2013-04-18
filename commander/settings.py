@@ -6,4 +6,5 @@ logging.basicConfig(format='[%(asctime)s] %(message)s',
 
 config = {
     'failonerror': True,
+    'notifiers': []
 }

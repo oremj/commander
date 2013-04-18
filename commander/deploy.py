@@ -7,7 +7,7 @@ from threading import Lock
 
 from commander.hosts import get_systems
 from commander.commands import local, remote, ThreadPool
-from commander.utils import cmd_status, listify, prefixlines
+from commander.utils import cmd_status, listify, notify, prefixlines
 from commander.settings import config
 
 commands = {}
@@ -146,8 +146,10 @@ def hosts(hosts, remote_limit=25, remote_kwargs=None):
             start = time.time()
             t.run_all()
             end = time.time()
-            logging.info('Finished %s (%0.3fs)' %
-                         (getattr(f, '__name__', repr(f)), end - start))
+            finished = ('Finished %s (%0.3fs)' %
+                        (getattr(f, '__name__', repr(f)), end - start))
+            notify(finished)
+            logging.info(finished)
 
         commands[f.__name__] = inner_wrapper
         return inner_wrapper
@@ -166,8 +168,10 @@ def task(f):
         start = time.time()
         res = f(Context(), *args, **kwargs)
         end = time.time()
-        logging.info('Finished %s (%0.3fs)' %
-                     (getattr(f, '__name__', repr(f)), end - start))
+        finished = 'Finished %s (%0.3fs)' % (getattr(f, '__name__', repr(f)),
+                                             end - start)
+        notify(finished)
+        logging.info(finished)
         return res
 
     commands[f.__name__] = wrapper

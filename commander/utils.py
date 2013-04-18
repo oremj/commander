@@ -2,8 +2,14 @@ from collections import namedtuple
 import types
 
 from commander.colorprint import colorize
+from commander.settings import config
 
 PStatus = namedtuple('PStatus', ['out', 'err', 'code'])
+
+
+def notify(msg):
+    for notifier in config['notifiers']:
+        notifier(msg)
 
 
 def cmd_status(run_time, host, cmd, pstatus, state='finished', color='blue'):
