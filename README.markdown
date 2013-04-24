@@ -6,8 +6,8 @@ Commander is two things:
 2. A remote command runner
 
 ### Improvements over fabric
-- Ability to run commands in parallel
-- Tasks can be called as functions from python
+- ~~Ability to run commands in parallel~~ (added in [Fabric 1.3.0](https://github.com/fabric/fabric/tree/1.3.0) on 2011-10-24)
+- Tasks simpler to call ~~can be called~~ as functions from python (see Fabric [library use](http://docs.fabfile.org/en/1.6/usage/library.html))
 - Avoids using a global state to allow for easier parallelism
 - Switchable ssh backend (in progress)
 
